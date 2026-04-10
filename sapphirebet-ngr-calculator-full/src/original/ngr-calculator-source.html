@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SapphireBet — NGR Target Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  #root { max-width: 640px; margin: 0 auto; }
+  @media (max-width: 480px) { #root { max-width: 100%; } }
+  body { background: #08090d; font-family: 'Inter', -apple-system, sans-serif; }
+  button { font-family: inherit; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; background: #1a1d24; border-radius: 3px; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #e5a00d; cursor: pointer; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+
+const MARCH = {
+  BR:{name:"Brazil",flag:"🇧🇷",au:1325,ftd:840,dep:437049,wd:351479,ngr:85570,arppu:66.6,cashout:.80,std:310,rtd:10997,ltv:520,payback:9.8,sportP:34827,casinoP:56756,ggr:169705},
+  AR:{name:"Argentina",flag:"🇦🇷",au:2245,ftd:1758,dep:222457,wd:180014,ngr:42443,arppu:19.6,cashout:.81,std:386,rtd:9651,ltv:127,payback:14.9,sportP:26073,casinoP:25525,ggr:86068},
+  CL:{name:"Chile",flag:"🇨🇱",au:555,ftd:462,dep:44180,wd:23172,ngr:21008,arppu:38.2,cashout:.52,std:84,rtd:1098,ltv:96,payback:3.4,sportP:954,casinoP:17037,ggr:34511},
+  MX:{name:"Mexico",flag:"🇲🇽",au:234,ftd:139,dep:63438,wd:52403,ngr:11034,arppu:53.3,cashout:.83,std:23,rtd:950,ltv:456,payback:35.5,sportP:2820,casinoP:8832,ggr:22893},
+  BD:{name:"Bangladesh",flag:"🇧🇩",au:376,ftd:245,dep:25780,wd:20785,ngr:4995,arppu:14.3,cashout:.81,std:88,rtd:714,ltv:105,payback:2.7,sportP:3107,casinoP:0,ggr:11633},
+  IN:{name:"India",flag:"🇮🇳",au:109,ftd:26,dep:37040,wd:30626,ngr:6415,arppu:69.7,cashout:.83,std:8,rtd:734,ltv:1425,payback:26.2,sportP:8278,casinoP:0,ggr:13133},
+  PE:{name:"Peru",flag:"🇵🇪",au:163,ftd:88,dep:156362,wd:139169,ngr:17193,arppu:116.2,cashout:.89,std:10,rtd:1176,ltv:1777,payback:68.0,sportP:-13821,casinoP:6749,ggr:-21109},
+  PL:{name:"Poland",flag:"🇵🇱",au:73,ftd:16,dep:49838,wd:35280,ngr:14558,arppu:227.5,cashout:.71,std:1,rtd:1523,ltv:3115,payback:37.1,sportP:1193,casinoP:0,ggr:16722},
+  PT:{name:"Portugal",flag:"🇵🇹",au:48,ftd:37,dep:18648,wd:17671,ngr:977,arppu:21.2,cashout:.95,std:3,rtd:352,ltv:504,payback:7.0,sportP:400,casinoP:0,ggr:2831},
+  CO:{name:"Colombia",flag:"🇨🇴",au:106,ftd:65,dep:6562,wd:5832,ngr:730,arppu:7.1,cashout:.89,std:5,rtd:999,ltv:101,payback:20.6,sportP:-2,casinoP:0,ggr:1251},
+};
+const Q1AVG = {
+  BR:{name:"Brazil",flag:"🇧🇷",au:1123,ftd:711,dep:406533,wd:322532,ngr:84001,arppu:75.8,cashout:.79},
+  AR:{name:"Argentina",flag:"🇦🇷",au:1709,ftd:1295,dep:211825,wd:174392,ngr:37433,arppu:22.9,cashout:.82},
+  CL:{name:"Chile",flag:"🇨🇱",au:299,ftd:223,dep:89660,wd:61397,ngr:28263,arppu:129.7,cashout:.67},
+  MX:{name:"Mexico",flag:"🇲🇽",au:206,ftd:133,dep:62307,wd:47512,ngr:14795,arppu:76.6,cashout:.75},
+  BD:{name:"Bangladesh",flag:"🇧🇩",au:354,ftd:262,dep:19594,wd:14127,ngr:5467,arppu:16.1,cashout:.70},
+  IN:{name:"India",flag:"🇮🇳",au:98,ftd:24,dep:25252,wd:19236,ngr:6016,arppu:66.9,cashout:.74},
+  PE:{name:"Peru",flag:"🇵🇪",au:120,ftd:62,dep:109609,wd:81138,ngr:28471,arppu:267.1,cashout:.67},
+  PL:{name:"Poland",flag:"🇵🇱",au:91,ftd:35,dep:61981,wd:48649,ngr:13332,arppu:179.0,cashout:.78},
+  PT:{name:"Portugal",flag:"🇵🇹",au:34,ftd:21,dep:20900,wd:15643,ngr:5258,arppu:211.5,cashout:.75},
+  CO:{name:"Colombia",flag:"🇨🇴",au:88,ftd:48,dep:5735,wd:5006,ngr:729,arppu:8.1,cashout:.88},
+};
+const PERIODS={mar:{label:"Март 2026",sub:"Факт",data:MARCH},q1:{label:"Q1 2026",sub:"Среднее",data:Q1AVG}};
+const P={regs:25780,ftd:3676,r2f:.143,approve:.689,m1:.148,m2m:.48};
+const MULT=1+P.m1/(1-P.m2m); // 1.285
+
+// Per-GEO Reg→FTD (from marketing reports: FTD / AU-based estimated regs)
+// Platform total: 25,780 regs → 3,676 FTD = 14.3% overall
+// But per-GEO we know: AU (proxy for regs reaching platform) and FTD
+// We use platform R2F as there's no per-GEO reg data
+const PAY_INFO={
+  BR:{approve:.86,provider:"Pagsmile PIX",issue:"Микродеп <$5 отклоняются. Approve высокий 86%"},
+  AR:{approve:.71,provider:"Банк. карты",issue:"Visa AR высокий decline. Approve 71%"},
+  IN:{approve:.27,provider:"Fourbill IMPS",issue:"Approve критически низкий 27%. Payzen даунтаймы"},
+  BD:{approve:.40,provider:"Fourbill",issue:"Approve 40%. Мало альтернатив"},
+  MX:{approve:.68,provider:"Pagsmile SPEI",issue:"SPEI задержки. Approve 68%"},
+  PE:{approve:.55,provider:"Shutdown",issue:"Платёжный shutdown в марте. Approve 55%"},
+  PL:{approve:.78,provider:"Jeton PLN",issue:"Approve 78%. Крипто USDC как альтернатива"},
+  PT:{approve:.75,provider:"—",issue:"Approve 75%. Мало объёма"},
+  CL:{approve:.74,provider:"—",issue:"Approve 74%. Нужен локальный провайдер"},
+  CO:{approve:.70,provider:"—",issue:"Approve 70%. Средний деп всего $6"},
+};
+
+const TARGETS=[50000,100000,150000,200000];
+
+function calcRegs(arppu,t,mult,r2f){return arppu<=0?99999:Math.ceil(t/arppu/mult/r2f)}
+function curRegs(g){return Math.round(g.ftd/P.r2f)}
+const $=n=>`${n<0?"−":""}$${Math.abs(Math.round(n)).toLocaleString()}`;
+const pf=n=>`${(n*100).toFixed(0)}%`;const p1=n=>`${(n*100).toFixed(1)}%`;
+const nm=n=>Math.round(n).toLocaleString();
+const F=`'JetBrains Mono',monospace`,Sans=`'Inter',-apple-system,sans-serif`;
+const clr={g:"#22c55e",y:"#eab308",r:"#ef4444"};
+
+function Tip({text,children}){
+  const[s,set]=useState(false);
+  return(<span style={{position:"relative",display:"inline-flex",alignItems:"center",gap:2}}
+    onMouseEnter={()=>set(true)} onMouseLeave={()=>set(false)} onClick={()=>set(v=>!v)}>
+    {children}
+    <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:13,height:13,borderRadius:7,
+      background:"#1e2028",color:"#6b7280",fontSize:8,cursor:"pointer",flexShrink:0,border:"1px solid #2a2d35"}}>?</span>
+    {s&&(<span style={{position:"absolute",bottom:"calc(100% + 6px)",left:"50%",transform:"translateX(-50%)",
+      background:"#1c1f28",border:"1px solid #2a2d35",borderRadius:8,padding:"8px 10px",fontSize:11,color:"#d1d5db",
+      lineHeight:1.5,width:270,zIndex:50,fontFamily:Sans,fontWeight:400,boxShadow:"0 8px 24px rgba(0,0,0,.6)",
+      whiteSpace:"pre-wrap",pointerEvents:"none"}}>{text}</span>)}
+  </span>);
+}
+function NgrBar({current,target}){
+  const pct=Math.max(0,Math.min(current/target*100,100)),gap=target-current;
+  const c=pct>=80?"#22c55e":pct>=40?"#eab308":pct>=15?"#f97316":"#ef4444";
+  return(<div><div style={{display:"flex",justifyContent:"space-between",fontSize:10,marginBottom:2}}>
+    <span style={{color:"#6b7280"}}>NGR <span style={{fontFamily:F,color:"#d1d5db",fontWeight:600}}>{$(current)}</span></span>
+    <span style={{color:"#6b7280"}}>цель <span style={{fontFamily:F,color:"#e5a00d",fontWeight:600}}>{$(target)}</span></span>
+  </div><div style={{height:5,background:"#1a1d24",borderRadius:3,overflow:"hidden"}}>
+    <div style={{height:"100%",width:`${pct}%`,background:c,borderRadius:3}}/></div>
+  <div style={{fontSize:10,color:c,marginTop:1,fontFamily:F,fontWeight:600}}>{gap>0?`+${$(gap)} (${pct.toFixed(0)}%)`:"✅ цель"}</div></div>);
+}
+function FunnelStep({icon,needed,current,label,color,pctOfTop,formula,tag}){
+  const w=Math.max(pctOfTop*100,8);
+  return(<div style={{marginBottom:2}}><div style={{display:"flex",alignItems:"center",gap:8}}>
+    <div style={{width:28,textAlign:"center",fontSize:13,flexShrink:0}}>{icon}</div>
+    <div style={{flex:1}}><div style={{background:`${color}15`,border:`1px solid ${color}28`,borderRadius:6,height:28,
+      width:`${w}%`,display:"flex",alignItems:"center",paddingLeft:8,gap:8}}>
+      <span style={{fontFamily:F,fontSize:13,fontWeight:700,color,whiteSpace:"nowrap"}}>{nm(needed)}</span>
+      {current!==undefined&&<span style={{fontSize:10,color:"#4b5563",whiteSpace:"nowrap"}}>сейчас {nm(current)}</span>}
+    </div><div style={{display:"flex",gap:6,marginTop:1,paddingLeft:2,alignItems:"center"}}>
+      <span style={{fontSize:9,color:"#6b7280"}}>{label}</span>
+      {tag&&<span style={{fontSize:7,color:"#4b5563",background:"#1a1d24",padding:"1px 4px",borderRadius:2}}>{tag}</span>}
+      {formula&&<span style={{fontSize:8,color:"#3d4150",fontFamily:F}}>{formula}</span>}
+    </div></div></div></div>);
+}
+function DropOff({lost,pctLost,sev,title,detail,fix,formula}){
+  const c=clr[sev];
+  return(<div style={{display:"flex",gap:6,padding:"1px 0 1px 32px",marginBottom:2}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:14,flexShrink:0}}>
+      <div style={{width:1,height:5,background:"#1e2028"}}/><div style={{fontSize:8,color:c}}>▼</div>
+      <div style={{width:1,height:5,background:"#1e2028"}}/></div>
+    <div style={{background:`${c}06`,border:`1px solid ${c}12`,borderRadius:6,padding:"4px 8px",flex:1}}>
+      <div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontSize:11,color:c,fontWeight:600}}>−{nm(lost)}</span>
+        <span style={{fontSize:10,color:c}}>{pf(pctLost)} потеря</span></div>
+      <div style={{fontSize:10,color:"#9ca3af",fontWeight:500,marginTop:1}}>{title}</div>
+      {detail&&<div style={{fontSize:9,color:"#6b7280",marginTop:2,whiteSpace:"pre-wrap"}}>{detail}</div>}
+      {formula&&<div style={{fontSize:8,color:"#3d4150",fontFamily:F,marginTop:1}}>{formula}</div>}
+      {fix&&sev!=="g"&&<div style={{fontSize:9,color:c,marginTop:2,borderTop:`1px solid ${c}10`,paddingTop:2}}>→ {fix}</div>}
+    </div></div>);
+}
+function Gain({value,label,detail}){
+  return(<div style={{display:"flex",gap:6,padding:"1px 0 1px 32px",marginBottom:2}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:14,flexShrink:0}}>
+      <div style={{width:1,height:4,background:"#1e2028"}}/><div style={{fontSize:8,color:"#22c55e"}}>▲</div>
+      <div style={{width:1,height:4,background:"#1e2028"}}/></div>
+    <div style={{background:"#22c55e06",border:"1px solid #22c55e10",borderRadius:6,padding:"3px 8px",flex:1}}>
+      <span style={{fontSize:11,color:"#22c55e",fontWeight:600}}>{value}</span>
+      <span style={{fontSize:10,color:"#6b7280",marginLeft:6}}>{label}</span>
+      {detail&&<div style={{fontSize:9,color:"#4b5563"}}>{detail}</div>}
+    </div></div>);
+}
+function PathCard({emoji,title,color,regs,sub,gx,isBest}){
+  return(<div style={{flex:1,minWidth:135,background:`${color}06`,border:`1px solid ${color}${isBest?"30":"15"}`,borderRadius:8,padding:10,position:"relative"}}>
+    {isBest&&<div style={{position:"absolute",top:-8,right:8,background:color,color:"#08090d",fontSize:8,fontWeight:700,padding:"1px 5px",borderRadius:3}}>ЛУЧШИЙ</div>}
+    <div style={{fontSize:10,color,fontWeight:600,marginBottom:3}}>{emoji} {title}</div>
+    <div style={{fontSize:10,color:"#6b7280"}}>{sub}</div>
+    <div style={{fontFamily:F,fontSize:15,fontWeight:700,color,margin:"3px 0"}}>{regs}</div>
+    {gx&&<div style={{fontSize:10,color:"#6b7280"}}>{gx}</div>}
+  </div>);
+}
+function TargetChips({value,onChange}){
+  return(<div style={{display:"flex",gap:3,marginTop:4}} onClick={e=>e.stopPropagation()}>
+    {TARGETS.map(v=>(<button key={v} onClick={e=>{e.stopPropagation();onChange(v)}} style={{
+      background:value===v?"#e5a00d":"#16171e",border:`1px solid ${value===v?"#e5a00d":"#1e2028"}`,
+      borderRadius:4,padding:"2px 7px",cursor:"pointer",fontFamily:F,
+      color:value===v?"#08090d":"#4b5563",fontSize:9,fontWeight:600,lineHeight:"16px"
+    }}>{v>=1000?`${v/1000}K`:v}</button>))}
+  </div>);
+}
+
+function App(){
+  const[period,setPeriod]=useState("mar");
+  const[view,setView]=useState("all");
+  const[globalTarget,setGlobalTarget]=useState(150000);
+  const[geoTargets,setGeoTargets]=useState({});
+  const[showImp,setShowImp]=useState(false);
+  const getTarget=c=>geoTargets[c]||globalTarget;
+  const setGeoTarget=(c,v)=>setGeoTargets(p=>({...p,[c]:v}));
+  const setAllTargets=v=>{setGlobalTarget(v);setGeoTargets({});};
+  const pd=PERIODS[period],geos=pd.data;
+  const cd={background:"#0f1015",border:"1px solid #1a1d24",borderRadius:10,padding:14,marginBottom:10};
+  const multI=1+.20/(1-.55),r2fI=P.r2f*(.82/P.approve);
+
+  // ━━ OVERVIEW ━━
+  if(view==="all"){
+    const rows=Object.entries(geos).map(([code,g])=>{
+      const t=getTarget(code),cr=curRegs(g);
+      const rNow=calcRegs(g.arppu,t,MULT,P.r2f),rImp=calcRegs(g.arppu,t,multI,r2fI);
+      const ftdNow=g.arppu>0?Math.ceil(t/g.arppu/MULT):99999;
+      const ftdImp=g.arppu>0?Math.ceil(t/g.arppu/multI):99999;
+      return{code,g,t,cr,rNow,rImp,ftdNow,ftdImp,gx:rNow/Math.max(1,cr)};
+    }).sort((a,b)=>(showImp?(a.rImp/a.cr):(a.gx))-(showImp?(b.rImp/b.cr):(b.gx)));
+    const totNGR=rows.reduce((s,r)=>s+r.g.ngr,0),totTarget=rows.reduce((s,r)=>s+r.t,0);
+
+    return(
+      <div style={{minHeight:"100vh",background:"#08090d",color:"#c8ccd4",fontFamily:Sans,padding:"12px 8px"}}>
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+        <div style={{textAlign:"center",padding:"6px 0 10px"}}>
+          <div style={{fontSize:9,letterSpacing:3,color:"#e5a00d",marginBottom:2}}>SAPPHIREBET</div>
+          <h1 style={{fontSize:17,fontWeight:700,margin:0,color:"#f3f4f6"}}>Задание для маркетинга</h1>
+        </div>
+        <div style={{display:"flex",gap:0,marginBottom:8,borderRadius:8,overflow:"hidden",border:"1px solid #1e2028"}}>
+          {Object.entries(PERIODS).map(([k,v])=>(<button key={k} onClick={()=>setPeriod(k)} style={{flex:1,padding:"6px",background:period===k?"#e5a00d12":"#0f1015",border:"none",borderRight:k==="mar"?"1px solid #1e2028":"none",cursor:"pointer"}}><div style={{fontSize:12,fontWeight:600,color:period===k?"#e5a00d":"#6b7280"}}>{v.label}</div></button>))}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,flexWrap:"wrap"}}>
+          <span style={{fontSize:11,color:"#6b7280"}}>Цель для всех:</span>
+          {TARGETS.map(v=>(<button key={v} onClick={()=>setAllTargets(v)} style={{background:globalTarget===v&&!Object.keys(geoTargets).length?"#e5a00d":"#12131a",border:`1px solid ${globalTarget===v&&!Object.keys(geoTargets).length?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"5px 11px",cursor:"pointer",fontFamily:F,color:globalTarget===v&&!Object.keys(geoTargets).length?"#08090d":"#6b7280",fontSize:12,fontWeight:700}}>{$(v)}</button>))}
+        </div>
+        <div style={{...cd,padding:10}}>
+          <NgrBar current={totNGR} target={totTarget}/>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:6,fontSize:10,color:"#4b5563",flexWrap:"wrap",gap:4}}>
+            <span>R2F <b style={{color:"#d1d5db"}}>{p1(P.r2f)}</b></span>
+            <span>Approve <b style={{color:"#d1d5db"}}>{pf(P.approve)}</b></span>
+            <span>M1 <b style={{color:"#eab308"}}>{p1(P.m1)}</b></span>
+            <span>M2M <b style={{color:"#eab308"}}>{p1(P.m2m)}</b></span>
+            <span>×<b style={{color:"#d1d5db"}}>{MULT.toFixed(2)}</b></span>
+          </div>
+        </div>
+        <div onClick={()=>setShowImp(!showImp)} style={{background:showImp?"#22c55e08":"#12131a",border:`1px solid ${showImp?"#22c55e25":"#1e2028"}`,borderRadius:8,padding:"6px 12px",marginBottom:10,cursor:"pointer"}}>
+          <span style={{fontSize:11,color:showImp?"#22c55e":"#6b7280"}}>{showImp?"✅ M1→20% M2M→55% Approve→82%":"Показать после улучшений →"}</span>
+        </div>
+        {rows.map(({code,g,t,cr,rNow,rImp,ftdNow,ftdImp})=>{
+          const d=showImp?rImp:rNow,ftdD=showImp?ftdImp:ftdNow;
+          const dGx=d/Math.max(1,cr),col=dGx<=1?"#22c55e":dGx<=3?"#22c55e":dGx<=6?"#eab308":dGx<=12?"#f97316":"#ef4444";
+          return(<div key={code} onClick={()=>{setShowImp(false);setView(code)}} style={{...cd,cursor:"pointer",padding:12}}
+            onMouseEnter={e=>e.currentTarget.style.borderColor="#2a2d35"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1a1d24"}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+              <div style={{display:"flex",alignItems:"center",gap:5}}>
+                <span style={{fontSize:16}}>{g.flag}</span><span style={{fontSize:13,fontWeight:600,color:"#f3f4f6"}}>{g.name}</span>
+                {geoTargets[code]&&<span style={{fontSize:7,color:"#e5a00d",background:"#e5a00d15",padding:"1px 4px",borderRadius:3}}>свой</span>}
+              </div>
+              <span style={{fontFamily:F,fontSize:11,fontWeight:600,color:col,background:`${col}12`,padding:"1px 6px",borderRadius:4}}>×{dGx.toFixed(1)}</span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:"4px 6px",marginBottom:4,alignItems:"center"}}>
+              <div style={{background:"#1a1d24",borderRadius:5,padding:"3px 7px",textAlign:"center"}}>
+                <div style={{fontSize:8,color:"#4b5563"}}>сейчас рег</div><div style={{fontFamily:F,fontSize:14,fontWeight:600,color:"#6b7280"}}>{nm(cr)}</div>
+              </div>
+              <span style={{color:"#2a2d35",fontSize:12,gridRow:"1/3"}}>→</span>
+              <div style={{background:"#e5a00d08",border:"1px solid #e5a00d18",borderRadius:5,padding:"3px 7px",textAlign:"center"}}>
+                <div style={{fontSize:8,color:"#e5a00d"}}>нужно рег</div><div style={{fontFamily:F,fontSize:15,fontWeight:700,color:"#e5a00d"}}>{nm(d)}</div>
+              </div>
+              <div style={{background:"#1a1d24",borderRadius:5,padding:"3px 7px",textAlign:"center"}}>
+                <div style={{fontSize:8,color:"#4b5563"}}>сейчас FTD</div><div style={{fontFamily:F,fontSize:13,fontWeight:600,color:"#6b7280"}}>{nm(g.ftd)}</div>
+              </div>
+              <div style={{background:"#3b82f608",border:"1px solid #3b82f618",borderRadius:5,padding:"3px 7px",textAlign:"center"}}>
+                <div style={{fontSize:8,color:"#3b82f6"}}>нужно FTD</div><div style={{fontFamily:F,fontSize:13,fontWeight:600,color:"#3b82f6"}}>{nm(ftdD)}</div>
+              </div>
+            </div>
+            {showImp&&rNow-rImp>0&&<div style={{fontSize:10,color:"#22c55e",marginBottom:3}}>↓{nm(rNow-rImp)} после улучшений</div>}
+            <NgrBar current={g.ngr} target={t}/>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:10,gap:4,flexWrap:"wrap"}}>
+              <span style={{color:"#4b5563"}}>ARPPU <span style={{fontFamily:F,fontWeight:600,color:g.arppu>=50?"#22c55e":g.arppu>=20?"#eab308":"#ef4444"}}>{$(g.arppu)}</span></span>
+              <span style={{color:"#4b5563"}}>CO <span style={{fontFamily:F,fontWeight:600,color:g.cashout>.85?"#ef4444":g.cashout>.75?"#eab308":"#22c55e"}}>{pf(g.cashout)}</span></span>
+              <span style={{color:"#4b5563"}}>AU <span style={{fontFamily:F,color:"#d1d5db"}}>{nm(g.au)}</span></span>
+            </div>
+            <div style={{marginTop:4,fontSize:10,color:"#4b5563"}}>
+              M1 <span style={{fontFamily:F,color:"#eab308"}}>{p1(P.m1)}</span> · M2M <span style={{fontFamily:F,color:"#eab308"}}>{p1(P.m2m)}</span> · ×<span style={{fontFamily:F,color:"#d1d5db"}}>{MULT.toFixed(2)}</span>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:5}}>
+              <span style={{fontSize:9,color:"#4b5563"}}>Цель:</span>
+              <TargetChips value={t} onChange={v=>setGeoTarget(code,v)}/>
+            </div>
+          </div>);
+        })}
+      </div>
+    );
+  }
+
+  // ━━ GEO DETAIL ━━
+  const g=geos[view]; if(!g){setView("all");return null;}
+  const target=getTarget(view),m=MARCH[view],cr=curRegs(g);
+  const pay=PAY_INFO[view]||{approve:P.approve,provider:"—",issue:"Нет данных"};
+  const geoApprove=pay.approve;
+  const rNow=calcRegs(g.arppu,target,MULT,P.r2f),gxNow=rNow/Math.max(1,cr);
+  const arppuNeed=target/(cr*P.r2f*MULT);
+  const pathC=calcRegs(g.arppu,target,multI,P.r2f),pathD=calcRegs(g.arppu,target,MULT,r2fI);
+  const pathE=calcRegs(g.arppu,target,multI,r2fI),pathF=calcRegs(g.arppu*1.5,target,multI,r2fI);
+  const ftdNeed=g.arppu>0?Math.ceil(target/g.arppu/MULT):0;
+  const active=g.arppu>0?Math.round(target/g.arppu):0;
+
+  // Funnel for TARGET — using platform R2F (only reliable end-to-end metric)
+  const fRegs=rNow;
+  const fFTD=ftdNeed;
+  const fLostR2F=fRegs-fFTD; // total lost reg→FTD
+  const fM1=Math.round(fFTD*P.m1);
+  const fLostM1=fFTD-fM1;
+  const fSteady=active;
+
+  // Current
+  const cFTD=g.ftd,cM1=Math.round(cFTD*P.m1),cSteady=Math.round(cFTD*MULT);
+
+  // Model check
+  const modelNGR=Math.round(cSteady*g.arppu);
+  const modelDiff=g.ngr-modelNGR;
+
+  return(
+    <div style={{minHeight:"100vh",background:"#08090d",color:"#c8ccd4",fontFamily:Sans,padding:"12px 8px"}}>
+      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+        <button onClick={()=>setView("all")} style={{background:"#12131a",border:"1px solid #1e2028",borderRadius:7,padding:"5px 11px",color:"#6b7280",fontSize:13,cursor:"pointer"}}>←</button>
+        <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:"#6b7280"}}>{pd.label}</div></div>
+      </div>
+      <div style={{display:"flex",gap:0,marginBottom:8,borderRadius:7,overflow:"hidden",border:"1px solid #1e2028"}}>
+        {Object.entries(PERIODS).map(([k,v])=>(<button key={k} onClick={()=>setPeriod(k)} style={{flex:1,padding:"5px",background:period===k?"#e5a00d12":"#0f1015",border:"none",borderRight:k==="mar"?"1px solid #1e2028":"none",cursor:"pointer",fontSize:11,fontWeight:600,color:period===k?"#e5a00d":"#4b5563"}}>{v.label}</button>))}
+      </div>
+      <div style={{...cd,padding:10,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+        <span style={{fontSize:11,color:"#6b7280"}}>Цель {g.name}:</span>
+        {TARGETS.map(v=>(<button key={v} onClick={()=>setGeoTarget(view,v)} style={{background:target===v?"#e5a00d":"#12131a",border:`1px solid ${target===v?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:F,color:target===v?"#08090d":"#6b7280",fontSize:11,fontWeight:700}}>{$(v)}</button>))}
+      </div>
+      <div style={cd}><NgrBar current={g.ngr} target={target}/></div>
+
+      {/* Hero */}
+      <div style={{background:"linear-gradient(135deg,#16130a,#0f1015)",border:"1px solid #e5a00d25",borderRadius:12,padding:16,marginBottom:10}}>
+        <div style={{fontSize:10,color:"#6b7280",textTransform:"uppercase",letterSpacing:1,marginBottom:6,textAlign:"center"}}>Регистрации / мес</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+          <div style={{textAlign:"center"}}><div style={{fontSize:9,color:"#4b5563"}}>сейчас</div><div style={{fontFamily:F,fontSize:20,fontWeight:600,color:"#6b7280"}}>{nm(cr)}</div></div>
+          <span style={{fontSize:18,color:"#2a2d35"}}>→</span>
+          <div style={{textAlign:"center"}}><div style={{fontSize:9,color:"#e5a00d"}}>нужно</div><div style={{fontFamily:F,fontSize:30,fontWeight:700,color:"#e5a00d"}}>{nm(rNow)}</div></div>
+          <div style={{textAlign:"center",marginLeft:6}}><div style={{fontSize:9,color:"#4b5563"}}>добрать</div><div style={{fontFamily:F,fontSize:16,fontWeight:600,color:gxNow<=3?"#22c55e":gxNow<=8?"#eab308":"#ef4444"}}>+{nm(Math.max(0,rNow-cr))}</div></div>
+        </div>
+      </div>
+
+      {/* Metrics */}
+      <div style={{...cd,display:"flex",flexWrap:"wrap",gap:8}}>
+        {[["AU",nm(g.au)],["FTD",nm(g.ftd)],["Dep",$(g.dep)],["WD",$(g.wd)],
+          ["NGR",$(g.ngr),g.ngr>0?"#22c55e":"#ef4444"],["CO",pf(g.cashout),g.cashout>.85?"#ef4444":"#d1d5db"],
+          ["ARPPU",$(g.arppu),g.arppu>=50?"#22c55e":g.arppu>=20?"#eab308":"#ef4444"],
+          ...(m?[["LTV",$(m.ltv)],["PB",`${m.payback}%`]]:[])]
+          .map(([l,v,c])=>(<div key={l} style={{minWidth:60}}><div style={{fontSize:8,color:"#4b5563",textTransform:"uppercase"}}>{l}</div><div style={{fontFamily:F,fontSize:13,fontWeight:600,color:c||"#d1d5db"}}>{v}</div></div>))}
+      </div>
+
+      {/* ═══ FUNNEL ═══ */}
+      <div style={{...cd,paddingBottom:16}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#f3f4f6"}}>Воронка до {$(target)} NGR</div>
+          <div style={{fontSize:8,color:"#4b5563",background:"#1a1d24",padding:"2px 5px",borderRadius:3}}>серым = факт</div>
+        </div>
+        <div style={{fontSize:9,color:"#4b5563",marginBottom:8,padding:"4px 6px",background:"#1a1d2440",borderRadius:4}}>
+          Модельная воронка: показывает сколько нужно на каждом этапе при текущих конверсиях (Reg→FTD {p1(P.r2f)}, M1 {p1(P.m1)}, M2M {p1(P.m2m)}). Конверсии — среднее по платформе.
+        </div>
+
+        {/* 1. Registrations */}
+        <FunnelStep icon="📥" needed={fRegs} current={cr} label="Регистрации / мес" color="#e5a00d" pctOfTop={1}/>
+
+        {/* Drop: Reg → FTD (combined, not split into attempt/decline) */}
+        <DropOff lost={fLostR2F} pctLost={1-P.r2f} sev="r"
+          title={`${pf(1-P.r2f)} теряются между регистрацией и первым депозитом`}
+          detail={`Reg→FTD конверсия всего ${p1(P.r2f)} (платформа: ${nm(P.regs)} рег → ${nm(P.ftd)} FTD).
+
+Потери складываются из:
+• Не пробуют депозит — ушли после регистрации
+• Платёж отклонён — decline ${pf(1-geoApprove)} (${pay.provider})
+
+${g.name}: ${pay.issue}`}
+          formula={`${nm(fRegs)} × (1 − ${p1(P.r2f)}) = ${nm(fLostR2F)} потеряно`}
+          fix={`Онбординг + бонус на депозит + снизить decline. Approve ${g.name}: ${pf(geoApprove)} (платформа ${pf(P.approve)})`}/>
+
+        {/* 2. FTD */}
+        <FunnelStep icon="✅" needed={fFTD} current={cFTD} label="FTD — первый депозит прошёл" color="#3b82f6" pctOfTop={fFTD/fRegs}
+          formula={`${nm(fRegs)} × ${p1(P.r2f)} = ${nm(fFTD)}`} tag="факт R2F"/>
+
+        {/* Drop: M1 */}
+        <DropOff lost={fLostM1} pctLost={1-P.m1} sev="y"
+          title={`${pf(1-P.m1)} не вернулись через месяц`}
+          detail={`M1 ретеншен ${p1(P.m1)}: из ${nm(fFTD)} новых FTD только ${nm(fM1)} будут активны в следующем месяце.
+
+${nm(fLostM1)} уходят навсегда — это главная дыра.
+Каждый +1% M1 экономит ~${nm(Math.round(rNow*0.01/P.m1))} регистраций.`}
+          formula={`${nm(fFTD)} × ${pf(1-P.m1)} = ${nm(fLostM1)} потеряно`}
+          fix="Бонус D1–D7, push день 1/3/7, персональный онбординг"/>
+
+        {/* 3. M1 Active */}
+        <FunnelStep icon="📅" needed={fM1} current={cM1} label="Активны через месяц (M1)" color="#06b6d4" pctOfTop={fM1/fRegs}
+          formula={`${nm(fFTD)} × ${p1(P.m1)} = ${nm(fM1)}`}/>
+
+        {/* 4. Steady state */}
+        <Gain value={`×${MULT.toFixed(2)} множитель`}
+          label={`когорты накапливаются (M2M ${p1(P.m2m)})`}
+          detail={`Выжившие удерживаются ${p1(P.m2m)} каждый месяц. ${nm(fFTD)} FTD/мес → ${nm(fSteady)} active в steady-state (~${Math.ceil(Math.log(0.1)/Math.log(P.m2m))} мес).`}/>
+
+        <FunnelStep icon="♻️" needed={fSteady} current={cSteady} label="Steady-state active" color="#22c55e" pctOfTop={fSteady/fRegs}
+          formula={`${nm(fFTD)} × ${MULT.toFixed(2)} = ${nm(fSteady)}`}/>
+
+        {/* ARPPU */}
+        <div style={{padding:"6px 0 0 32px",fontSize:11,color:"#6b7280"}}>
+          × ARPPU <span style={{fontFamily:F,fontWeight:600,color:g.arppu>=50?"#22c55e":"#eab308"}}>{$(g.arppu)}</span>
+          <span style={{fontSize:9,color:"#3d4150",fontFamily:F,marginLeft:6}}>{nm(fSteady)} × {$(g.arppu)} = {$(fSteady*g.arppu)}</span>
+        </div>
+
+        <div style={{marginTop:8,padding:"10px 12px",background:"#e5a00d06",border:"1px solid #e5a00d15",borderRadius:8,display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:16}}>💰</span>
+          <div><div style={{fontFamily:F,fontSize:18,fontWeight:700,color:"#e5a00d"}}>{$(target)} NGR/мес</div>
+            <div style={{fontSize:9,color:"#4b5563"}}>сейчас {$(g.ngr)} · нужно ×{(target/Math.max(1,g.ngr)).toFixed(1)}</div></div>
+        </div>
+
+        {/* Model check */}
+        <div style={{marginTop:8,padding:"6px 8px",background:"#1a1d2440",borderRadius:6,fontSize:9,color:"#4b5563"}}>
+          <b style={{color:"#6b7280"}}>Проверка модели:</b> {nm(cFTD)} FTD × {MULT.toFixed(2)} = {nm(cSteady)} active × {$(g.arppu)} = {$(modelNGR)} модель
+          vs {$(g.ngr)} факт {modelDiff>0?<span style={{color:"#22c55e"}}>(+{$(modelDiff)} — старые когорты добавляют)</span>:<span style={{color:"#eab308"}}>({$(modelDiff)})</span>}
+        </div>
+      </div>
+
+      {/* NGR vs GGR */}
+      {m&&(<div style={cd}>
+        <div style={{fontSize:12,fontWeight:600,color:"#f3f4f6",marginBottom:8}}>NGR vs GGR</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <div style={{flex:1,minWidth:130,background:"#e5a00d06",border:"1px solid #e5a00d15",borderRadius:7,padding:8}}>
+            <div style={{fontSize:9,color:"#e5a00d"}}>NGR (D−W)</div>
+            <div style={{fontFamily:F,fontSize:16,fontWeight:700,color:"#e5a00d"}}>{$(g.ngr)}</div>
+            <div style={{fontSize:9,color:"#4b5563"}}>{$(g.dep)} − {$(g.wd)}</div>
+          </div>
+          <div style={{flex:1,minWidth:130,background:"#3b82f606",border:"1px solid #3b82f615",borderRadius:7,padding:8}}>
+            <div style={{fontSize:9,color:"#3b82f6"}}>GGR</div>
+            <div style={{fontFamily:F,fontSize:16,fontWeight:700,color:"#3b82f6"}}>{$(m.ggr)}</div>
+            <div style={{fontSize:9,color:"#4b5563"}}>Sport {$(m.sportP)} + Casino {$(m.casinoP)}</div>
+          </div>
+        </div>
+      </div>)}
+
+      {/* 4 PATHS */}
+      <div style={{...cd,background:"#0d0e14",border:"1px solid #e5a00d18"}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#f3f4f6",marginBottom:10}}>4 пути к {$(target)}</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+          <PathCard emoji="📢" title="Лить трафик" color="#e5a00d" regs={`${nm(rNow)} рег/мес`} sub={`ARPPU ${$(g.arppu)}`} gx={`×${gxNow.toFixed(1)}`}/>
+          <PathCard emoji="💰" title="Растить ARPPU" color="#8b5cf6" regs={`${$(arppuNeed)} ARPPU`} sub={`Трафик ${nm(cr)}`} gx={`×${(arppuNeed/g.arppu).toFixed(1)} от ${$(g.arppu)}`}/>
+        </div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+          <PathCard emoji="🔄" title="Ретеншен" color="#06b6d4" regs={`${nm(pathC)} рег/мес`} sub={`M1→20% M2M→55%`} gx={`−${nm(rNow-pathC)} рег`} isBest={rNow-pathC>rNow-pathD}/>
+          <PathCard emoji="💳" title="Платежи" color="#22c55e" regs={`${nm(pathD)} рег/мес`} sub={`Approve→82%`} gx={`−${nm(rNow-pathD)} рег`} isBest={rNow-pathD>rNow-pathC}/>
+        </div>
+        <div style={{background:"#22c55e06",border:"1px solid #22c55e18",borderRadius:8,padding:10,marginBottom:6}}>
+          <div style={{fontSize:11,color:"#22c55e",fontWeight:600}}>🎯 Рет + Плат</div>
+          <div style={{fontFamily:F,fontSize:16,fontWeight:700,color:"#22c55e"}}>{nm(pathE)} рег <span style={{fontSize:12,fontWeight:400}}>−{nm(rNow-pathE)} от базы</span></div>
+        </div>
+        <div style={{background:"#8b5cf608",border:"1px solid #8b5cf615",borderRadius:8,padding:10}}>
+          <div style={{fontSize:11,color:"#8b5cf6",fontWeight:600}}>🚀 Всё + ARPPU ×1.5</div>
+          <div style={{fontFamily:F,fontSize:16,fontWeight:700,color:"#8b5cf6"}}>{nm(pathF)} рег <span style={{fontSize:12,fontWeight:400}}>−{nm(rNow-pathF)} · ARPPU {$(g.arppu)}→{$(g.arppu*1.5)}</span></div>
+        </div>
+      </div>
+
+      <div style={{fontSize:8,color:"#2a2d35",padding:"3px 8px"}}>NGR=D−W · ×{MULT.toFixed(2)} · R2F={p1(P.r2f)} · {pd.label} · MGM.io</div>
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
