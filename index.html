@@ -19,7 +19,7 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState } = React;
+const { useState, useEffect, useRef } = React;
 
 
 const MARCH = {
@@ -68,6 +68,7 @@ const PAY_INFO={
 };
 
 const TARGETS=[50000,100000,150000,200000];
+const GEO_ORDER=["BR","AR","CL","MX","BD","IN","PE","PL","PT","CO"];
 
 function calcRegs(arppu,t,mult,r2f){return arppu<=0?99999:Math.ceil(t/arppu/mult/r2f)}
 function curRegs(g){return Math.round(g.ftd/P.r2f)}
@@ -166,17 +167,21 @@ function App(){
   const[globalTarget,setGlobalTarget]=useState(150000);
   const[geoTargets,setGeoTargets]=useState({});
   const[showImp,setShowImp]=useState(false);
+  const scrollRef=useRef(0);
   const getTarget=c=>geoTargets[c]||globalTarget;
   const setGeoTarget=(c,v)=>setGeoTargets(p=>({...p,[c]:v}));
   const setAllTargets=v=>{setGlobalTarget(v);};
+  const openGeo=code=>{scrollRef.current=window.scrollY;setView(code);};
+  const goBack=()=>{setView("all");};
+  useEffect(()=>{requestAnimationFrame(()=>{if(view==="all"){window.scrollTo(0,scrollRef.current);}else{window.scrollTo(0,0);}});},[view]);
   const pd=PERIODS[period],geos=pd.data;
   const cd={background:"#0f1015",border:"1px solid #1a1d24",borderRadius:10,padding:14,marginBottom:10};
   const multI=1+.20/(1-.55),r2fI=P.r2f*(.82/P.approve);
 
   // ━━ OVERVIEW ━━
   if(view==="all"){
-    const rows=Object.entries(geos).map(([code,g])=>{
-      const t=getTarget(code),cr=curRegs(g);
+    const rows=GEO_ORDER.filter(code=>geos[code]).map(code=>{
+      const g=geos[code],t=getTarget(code),cr=curRegs(g);
       const rNow=calcRegs(g.arppu,t,MULT,P.r2f),rImp=calcRegs(g.arppu,t,multI,r2fI);
       const ftdNow=g.arppu>0?Math.ceil(t/g.arppu/MULT):99999;
       const ftdImp=g.arppu>0?Math.ceil(t/g.arppu/multI):99999;
@@ -213,7 +218,7 @@ function App(){
         {rows.map(({code,g,t,cr,rNow,rImp,ftdNow,ftdImp})=>{
           const d=showImp?rImp:rNow,ftdD=showImp?ftdImp:ftdNow;
           const dGx=d/Math.max(1,cr),col=dGx<=1?"#22c55e":dGx<=3?"#a3e635":dGx<=6?"#eab308":dGx<=12?"#f97316":"#ef4444";
-          return(<div key={code} onClick={()=>{setShowImp(false);setView(code)}} style={{...cd,cursor:"pointer",padding:12}}
+          return(<div key={code} onClick={()=>openGeo(code)} style={{...cd,cursor:"pointer",padding:12}}
             onMouseEnter={e=>e.currentTarget.style.borderColor="#2a2d35"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1a1d24"}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
               <div style={{display:"flex",alignItems:"center",gap:5}}>
@@ -258,7 +263,7 @@ function App(){
   }
 
   // ━━ GEO DETAIL ━━
-  const g=geos[view]; if(!g){setView("all");return null;}
+  const g=geos[view]; if(!g){goBack();return null;}
   const target=getTarget(view),m=MARCH[view],cr=curRegs(g);
   const pay=PAY_INFO[view]||{approve:P.approve,provider:"—",issue:"Нет данных"};
   const geoApprove=pay.approve;
@@ -287,7 +292,7 @@ function App(){
   return(
     <div style={{minHeight:"100vh",background:"#08090d",color:"#c8ccd4",fontFamily:Sans,padding:"12px 8px"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-        <button onClick={()=>setView("all")} style={{background:"#12131a",border:"1px solid #1e2028",borderRadius:7,padding:"5px 11px",color:"#6b7280",fontSize:13,cursor:"pointer"}}>←</button>
+        <button onClick={goBack} style={{background:"#12131a",border:"1px solid #1e2028",borderRadius:7,padding:"5px 11px",color:"#6b7280",fontSize:13,cursor:"pointer"}}>←</button>
         <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:"#6b7280"}}>{pd.label}</div></div>
       </div>
       <div style={{display:"flex",gap:0,marginBottom:8,borderRadius:7,overflow:"hidden",border:"1px solid #1e2028"}}>
