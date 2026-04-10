@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SapphireBet — NGR Target Calculator</title>
+<title>SapphireBet — NGR Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -149,12 +149,13 @@ function PathCard({emoji,title,color,regs,sub,gx,isBest}){
     {gx&&<div style={{fontSize:10,color:"#6b7280"}}>{gx}</div>}
   </div>);
 }
-function TargetChips({value,onChange}){
-  return(<div style={{display:"flex",gap:3,marginTop:4}} onClick={e=>e.stopPropagation()}>
+function TargetChips({value,onChange,size}){
+  const big=size==="big";
+  return(<div style={{display:"flex",gap:big?4:3,marginTop:big?0:4}} onClick={e=>e.stopPropagation()}>
     {TARGETS.map(v=>(<button key={v} onClick={e=>{e.stopPropagation();onChange(v)}} style={{
       background:value===v?"#e5a00d":"#16171e",border:`1px solid ${value===v?"#e5a00d":"#1e2028"}`,
-      borderRadius:4,padding:"2px 7px",cursor:"pointer",fontFamily:F,
-      color:value===v?"#08090d":"#4b5563",fontSize:9,fontWeight:600,lineHeight:"16px"
+      borderRadius:big?5:4,padding:big?"4px 10px":"2px 7px",cursor:"pointer",fontFamily:F,
+      color:value===v?"#08090d":"#4b5563",fontSize:big?11:9,fontWeight:600,lineHeight:big?"18px":"16px"
     }}>{v>=1000?`${v/1000}K`:v}</button>))}
   </div>);
 }
@@ -167,7 +168,7 @@ function App(){
   const[showImp,setShowImp]=useState(false);
   const getTarget=c=>geoTargets[c]||globalTarget;
   const setGeoTarget=(c,v)=>setGeoTargets(p=>({...p,[c]:v}));
-  const setAllTargets=v=>{setGlobalTarget(v);setGeoTargets({});};
+  const setAllTargets=v=>{setGlobalTarget(v);};
   const pd=PERIODS[period],geos=pd.data;
   const cd={background:"#0f1015",border:"1px solid #1a1d24",borderRadius:10,padding:14,marginBottom:10};
   const multI=1+.20/(1-.55),r2fI=P.r2f*(.82/P.approve);
@@ -186,15 +187,15 @@ function App(){
     return(
       <div style={{minHeight:"100vh",background:"#08090d",color:"#c8ccd4",fontFamily:Sans,padding:"12px 8px"}}>
         <div style={{textAlign:"center",padding:"6px 0 10px"}}>
-          <div style={{fontSize:9,letterSpacing:3,color:"#e5a00d",marginBottom:2}}>SAPPHIREBET</div>
-          <h1 style={{fontSize:17,fontWeight:700,margin:0,color:"#f3f4f6"}}>Задание для маркетинга</h1>
+          <div style={{fontSize:11,letterSpacing:3,color:"#e5a00d",fontWeight:700}}>SAPPHIREBET</div>
+          <div style={{fontSize:13,color:"#6b7280",marginTop:2}}>NGR Target Calculator</div>
         </div>
         <div style={{display:"flex",gap:0,marginBottom:8,borderRadius:8,overflow:"hidden",border:"1px solid #1e2028"}}>
           {Object.entries(PERIODS).map(([k,v])=>(<button key={k} onClick={()=>setPeriod(k)} style={{flex:1,padding:"6px",background:period===k?"#e5a00d12":"#0f1015",border:"none",borderRight:k==="mar"?"1px solid #1e2028":"none",cursor:"pointer"}}><div style={{fontSize:12,fontWeight:600,color:period===k?"#e5a00d":"#6b7280"}}>{v.label}</div></button>))}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,flexWrap:"wrap"}}>
           <span style={{fontSize:11,color:"#6b7280"}}>Цель для всех:</span>
-          {TARGETS.map(v=>(<button key={v} onClick={()=>setAllTargets(v)} style={{background:globalTarget===v&&!Object.keys(geoTargets).length?"#e5a00d":"#12131a",border:`1px solid ${globalTarget===v&&!Object.keys(geoTargets).length?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"5px 11px",cursor:"pointer",fontFamily:F,color:globalTarget===v&&!Object.keys(geoTargets).length?"#08090d":"#6b7280",fontSize:12,fontWeight:700}}>{$(v)}</button>))}
+          {TARGETS.map(v=>(<button key={v} onClick={()=>setAllTargets(v)} style={{background:globalTarget===v?"#e5a00d":"#12131a",border:`1px solid ${globalTarget===v?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"5px 11px",cursor:"pointer",fontFamily:F,color:globalTarget===v?"#08090d":"#6b7280",fontSize:12,fontWeight:700}}>{$(v)}</button>))}
         </div>
         <div style={{...cd,padding:10}}>
           <NgrBar current={totNGR} target={totTarget}/>
@@ -217,7 +218,7 @@ function App(){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
               <div style={{display:"flex",alignItems:"center",gap:5}}>
                 <span style={{fontSize:16}}>{g.flag}</span><span style={{fontSize:13,fontWeight:600,color:"#f3f4f6"}}>{g.name}</span>
-                {geoTargets[code]&&<span style={{fontSize:7,color:"#e5a00d",background:"#e5a00d15",padding:"1px 4px",borderRadius:3}}>свой</span>}
+                {geoTargets[code]&&<span onClick={e=>{e.stopPropagation();setGeoTargets(p=>{const n={...p};delete n[code];return n;})}} style={{fontSize:7,color:"#e5a00d",background:"#e5a00d15",padding:"1px 5px",borderRadius:3,cursor:"pointer"}}>свой ✕</span>}
               </div>
               <span style={{fontFamily:F,fontSize:11,fontWeight:600,color:col,background:`${col}12`,padding:"1px 6px",borderRadius:4}}>×{dGx.toFixed(1)}</span>
             </div>
@@ -246,9 +247,9 @@ function App(){
             <div style={{marginTop:4,fontSize:10,color:"#4b5563"}}>
               M1 <span style={{fontFamily:F,color:"#eab308"}}>{p1(P.m1)}</span> · M2M <span style={{fontFamily:F,color:"#eab308"}}>{p1(P.m2m)}</span> · ×<span style={{fontFamily:F,color:"#d1d5db"}}>{MULT.toFixed(2)}</span>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:5}}>
-              <span style={{fontSize:9,color:"#4b5563"}}>Цель:</span>
-              <TargetChips value={t} onChange={v=>setGeoTarget(code,v)}/>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:6,padding:"5px 0 2px",borderTop:"1px solid #1a1d24"}}>
+              <span style={{fontSize:10,color:"#6b7280",whiteSpace:"nowrap"}}>Цель:</span>
+              <TargetChips value={t} onChange={v=>setGeoTarget(code,v)} size="big"/>
             </div>
           </div>);
         })}
