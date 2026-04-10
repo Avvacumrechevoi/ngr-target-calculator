@@ -11,8 +11,6 @@
   @media (max-width: 480px) { #root { max-width: 100%; } }
   body { background: #08090d; font-family: 'Inter', -apple-system, sans-serif; }
   button { font-family: inherit; }
-  input[type="range"] { -webkit-appearance: none; appearance: none; background: #1a1d24; border-radius: 3px; outline: none; }
-  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #e5a00d; cursor: pointer; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -93,7 +91,7 @@ function Tip({text,children}){
   </span>);
 }
 function NgrBar({current,target}){
-  const pct=Math.max(0,Math.min(current/target*100,100)),gap=target-current;
+  const pct=target>0?Math.max(0,Math.min(current/target*100,100)):0,gap=target-current;
   const c=pct>=80?"#22c55e":pct>=40?"#eab308":pct>=15?"#f97316":"#ef4444";
   return(<div><div style={{display:"flex",justifyContent:"space-between",fontSize:10,marginBottom:2}}>
     <span style={{color:"#6b7280"}}>NGR <span style={{fontFamily:F,color:"#d1d5db",fontWeight:600}}>{$(current)}</span></span>
@@ -187,7 +185,6 @@ function App(){
 
     return(
       <div style={{minHeight:"100vh",background:"#08090d",color:"#c8ccd4",fontFamily:Sans,padding:"12px 8px"}}>
-        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
         <div style={{textAlign:"center",padding:"6px 0 10px"}}>
           <div style={{fontSize:9,letterSpacing:3,color:"#e5a00d",marginBottom:2}}>SAPPHIREBET</div>
           <h1 style={{fontSize:17,fontWeight:700,margin:0,color:"#f3f4f6"}}>Задание для маркетинга</h1>
@@ -214,7 +211,7 @@ function App(){
         </div>
         {rows.map(({code,g,t,cr,rNow,rImp,ftdNow,ftdImp})=>{
           const d=showImp?rImp:rNow,ftdD=showImp?ftdImp:ftdNow;
-          const dGx=d/Math.max(1,cr),col=dGx<=1?"#22c55e":dGx<=3?"#22c55e":dGx<=6?"#eab308":dGx<=12?"#f97316":"#ef4444";
+          const dGx=d/Math.max(1,cr),col=dGx<=1?"#22c55e":dGx<=3?"#a3e635":dGx<=6?"#eab308":dGx<=12?"#f97316":"#ef4444";
           return(<div key={code} onClick={()=>{setShowImp(false);setView(code)}} style={{...cd,cursor:"pointer",padding:12}}
             onMouseEnter={e=>e.currentTarget.style.borderColor="#2a2d35"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1a1d24"}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
@@ -265,7 +262,7 @@ function App(){
   const pay=PAY_INFO[view]||{approve:P.approve,provider:"—",issue:"Нет данных"};
   const geoApprove=pay.approve;
   const rNow=calcRegs(g.arppu,target,MULT,P.r2f),gxNow=rNow/Math.max(1,cr);
-  const arppuNeed=target/(cr*P.r2f*MULT);
+  const arppuNeed=cr>0?target/(cr*P.r2f*MULT):0;
   const pathC=calcRegs(g.arppu,target,multI,P.r2f),pathD=calcRegs(g.arppu,target,MULT,r2fI);
   const pathE=calcRegs(g.arppu,target,multI,r2fI),pathF=calcRegs(g.arppu*1.5,target,multI,r2fI);
   const ftdNeed=g.arppu>0?Math.ceil(target/g.arppu/MULT):0;
@@ -288,7 +285,6 @@ function App(){
 
   return(
     <div style={{minHeight:"100vh",background:"#08090d",color:"#c8ccd4",fontFamily:Sans,padding:"12px 8px"}}>
-      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
         <button onClick={()=>setView("all")} style={{background:"#12131a",border:"1px solid #1e2028",borderRadius:7,padding:"5px 11px",color:"#6b7280",fontSize:13,cursor:"pointer"}}>←</button>
         <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:"#6b7280"}}>{pd.label}</div></div>
@@ -372,7 +368,7 @@ ${nm(fLostM1)} уходят навсегда — это главная дыра.
           detail={`Выжившие удерживаются ${p1(P.m2m)} каждый месяц. ${nm(fFTD)} FTD/мес → ${nm(fSteady)} active в steady-state (~${Math.ceil(Math.log(0.1)/Math.log(P.m2m))} мес).`}/>
 
         <FunnelStep icon="♻️" needed={fSteady} current={cSteady} label="Steady-state active" color="#22c55e" pctOfTop={fSteady/fRegs}
-          formula={`${nm(fFTD)} × ${MULT.toFixed(2)} = ${nm(fSteady)}`}/>
+          formula={`${$(target)} / ${$(g.arppu)} = ${nm(fSteady)}`}/>
 
         {/* ARPPU */}
         <div style={{padding:"6px 0 0 32px",fontSize:11,color:"#6b7280"}}>
@@ -383,7 +379,7 @@ ${nm(fLostM1)} уходят навсегда — это главная дыра.
         <div style={{marginTop:8,padding:"10px 12px",background:"#e5a00d06",border:"1px solid #e5a00d15",borderRadius:8,display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontSize:16}}>💰</span>
           <div><div style={{fontFamily:F,fontSize:18,fontWeight:700,color:"#e5a00d"}}>{$(target)} NGR/мес</div>
-            <div style={{fontSize:9,color:"#4b5563"}}>сейчас {$(g.ngr)} · нужно ×{(target/Math.max(1,g.ngr)).toFixed(1)}</div></div>
+            <div style={{fontSize:9,color:"#4b5563"}}>сейчас {$(g.ngr)}{g.ngr>0?` · нужно ×${(target/g.ngr).toFixed(1)}`:""}</div></div>
         </div>
 
         {/* Model check */}
