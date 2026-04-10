@@ -181,7 +181,7 @@ function App(){
       const ftdNow=g.arppu>0?Math.ceil(t/g.arppu/MULT):99999;
       const ftdImp=g.arppu>0?Math.ceil(t/g.arppu/multI):99999;
       return{code,g,t,cr,rNow,rImp,ftdNow,ftdImp,gx:rNow/Math.max(1,cr)};
-    }).sort((a,b)=>(showImp?(a.rImp/a.cr):(a.gx))-(showImp?(b.rImp/b.cr):(b.gx)));
+    });
     const totNGR=rows.reduce((s,r)=>s+r.g.ngr,0),totTarget=rows.reduce((s,r)=>s+r.t,0);
 
     return(
