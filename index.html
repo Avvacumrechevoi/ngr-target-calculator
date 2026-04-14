@@ -301,13 +301,14 @@ function App(){
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
         <button onClick={goBack} style={{background:"#12131a",border:"1px solid #1e2028",borderRadius:7,padding:"5px 11px",color:"#6b7280",fontSize:13,cursor:"pointer"}}>←</button>
-        <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:"#6b7280"}}>{pd.label} · {pd.sub}</div></div>
+        <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:noVip?"#dc2626":"#6b7280"}}>{pd.label} · {noVip?"Без VIP":pd.sub}</div></div>
       </div>
 
       {/* 1. TARGET */}
       <div style={{...cd,padding:10,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
         <span style={{fontSize:11,color:"#6b7280"}}>NGR цель:</span>
         {TARGETS.map(v=>(<button key={v} onClick={()=>setGeoTarget(view,v)} style={{background:target===v?"#e5a00d":"#12131a",border:`1px solid ${target===v?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:F,color:target===v?"#08090d":"#6b7280",fontSize:11,fontWeight:700}}>{$(v)}</button>))}
+        <div style={{marginLeft:"auto"}}><button onClick={()=>setNoVip(v=>!v)} style={{background:noVip?"#dc2626":"#12131a",border:`1px solid ${noVip?"#dc2626":"#1e2028"}`,borderRadius:6,padding:"4px 9px",cursor:"pointer",fontFamily:F,color:noVip?"#fff":"#6b7280",fontSize:10,fontWeight:600,transition:"all .15s"}}>{noVip?"Без VIP ✓":"Без VIP"}</button></div>
       </div>
 
       {/* 2. ANSWER — what marketing needs to deliver */}
