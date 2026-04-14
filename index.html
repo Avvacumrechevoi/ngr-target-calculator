@@ -160,16 +160,20 @@ function App(){
   const[geoTargets,setGeoTargets]=useState({});
   const[showImp,setShowImp]=useState(false);
   const[modelP,setModelP]=useState({});
-  const[noVip,setNoVip]=useState(false);
   const[geoNoVip,setGeoNoVip]=useState({});
-  const toggleGeoVip=(code,e)=>{e.stopPropagation();setGeoNoVip(p=>({...p,[code]:!p[code]}));};
-  const toggleAllVip=()=>{const nv=!noVip;setNoVip(nv);const all={};GEO_ORDER.forEach(c=>{all[c]=nv;});setGeoNoVip(all);};
-  const isNoVip=(code)=>geoNoVip[code]||false;
   const scrollRef=useRef(0);
 
-  const PERIODS_ALL={mar:{label:"Март 2026",sub:"Факт",data:MARCH},q1:{label:"Q1 2026",sub:"Среднее",data:Q1AVG}};
-  const PERIODS_NV={mar:{label:"Март 2026",sub:"Без VIP",data:MARCH_NOVIP},q1:{label:"Q1 2026",sub:"Среднее",data:Q1AVG}};
-  const curPeriods=noVip?PERIODS_NV:PERIODS_ALL;
+  const toggleGeoVip=(code,e)=>{if(e)e.stopPropagation();setGeoNoVip(p=>({...p,[code]:!p[code]}));};
+  const allVipOff=Object.values(geoNoVip).every(v=>!v)||Object.keys(geoNoVip).length===0;
+  const toggleAllVip=()=>{const nv=allVipOff;const all={};GEO_ORDER.forEach(c=>{all[c]=nv;});setGeoNoVip(all);};
+  const isNoVip=(code)=>!!geoNoVip[code];
+  const getGeoData=(code)=>{
+    const base=period==="mar"?MARCH:Q1AVG;
+    const nv=period==="mar"?MARCH_NOVIP:null;
+    return (isNoVip(code)&&nv&&nv[code])?nv[code]:base[code];
+  };
+  const pdLabel=period==="mar"?"Март 2026":"Q1 2026";
+
   const getTarget=c=>geoTargets[c]||globalTarget;
   const setGeoTarget=(c,v)=>setGeoTargets(p=>({...p,[c]:v}));
   const setAllTargets=v=>{setGlobalTarget(v);};
@@ -185,7 +189,7 @@ function App(){
   const setMP=(code,key,val)=>setModelP(p=>({...p,[code]:{...(p[code]||{}), [key]:val}}));
   const resetMP=code=>setModelP(p=>{const n={...p};delete n[code];return n;});
 
-  const pd=curPeriods[period],geos=pd.data;
+  const baseGeos=period==="mar"?MARCH:Q1AVG;
   const cd={background:"#0f1015",border:"1px solid #1a1d24",borderRadius:10,padding:14,marginBottom:10};
 
   function calc(code,g,t){
@@ -200,10 +204,10 @@ function App(){
 
   // ━━ OVERVIEW ━━
   if(view==="all"){
-    const rows=GEO_ORDER.filter(code=>geos[code]).map(code=>{
-      const gAll=MARCH[code], gNv=MARCH_NOVIP[code];
+    const rows=GEO_ORDER.filter(code=>baseGeos[code]).map(code=>{
+      const gNv=MARCH_NOVIP[code];
       const useNv=isNoVip(code)&&period==="mar"&&gNv;
-      const g=useNv?gNv:geos[code];
+      const g=useNv?gNv:baseGeos[code];
       const t=getTarget(code);
       const c=calc(code,g,t);
       const multI=1+.20/(1-.55),r2fI=P_DEF.r2f*(.82/.689);
@@ -220,12 +224,12 @@ function App(){
           <div style={{fontSize:13,color:"#6b7280",marginTop:2}}>NGR Target Calculator</div>
         </div>
         <div style={{display:"flex",gap:0,marginBottom:8,borderRadius:8,overflow:"hidden",border:"1px solid #1e2028"}}>
-          {Object.entries(curPeriods).map(([k,v])=>(<button key={k} onClick={()=>setPeriod(k)} style={{flex:1,padding:"6px",background:period===k?"#e5a00d12":"#0f1015",border:"none",borderRight:k==="mar"?"1px solid #1e2028":"none",cursor:"pointer"}}><div style={{fontSize:12,fontWeight:600,color:period===k?"#e5a00d":"#6b7280"}}>{v.label}</div></button>))}
+          {[{k:"mar",label:"Март 2026"},{k:"q1",label:"Q1 2026"}].map(v=>(<button key={v.k} onClick={()=>setPeriod(v.k)} style={{flex:1,padding:"6px",background:period===v.k?"#e5a00d12":"#0f1015",border:"none",borderRight:v.k==="mar"?"1px solid #1e2028":"none",cursor:"pointer"}}><div style={{fontSize:12,fontWeight:600,color:period===v.k?"#e5a00d":"#6b7280"}}>{v.label}</div></button>))}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,flexWrap:"wrap"}}>
           <span style={{fontSize:11,color:"#6b7280"}}>Цель для всех:</span>
           {TARGETS.map(v=>(<button key={v} onClick={()=>setAllTargets(v)} style={{background:globalTarget===v?"#e5a00d":"#12131a",border:`1px solid ${globalTarget===v?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"5px 11px",cursor:"pointer",fontFamily:F,color:globalTarget===v?"#08090d":"#6b7280",fontSize:12,fontWeight:700}}>{$(v)}</button>))}
-          <div style={{marginLeft:"auto"}}><button onClick={()=>setNoVip(v=>!v)} style={{background:noVip?"#dc2626":"#12131a",border:`1px solid ${noVip?"#dc2626":"#1e2028"}`,borderRadius:6,padding:"5px 10px",cursor:"pointer",fontFamily:F,color:noVip?"#fff":"#6b7280",fontSize:11,fontWeight:600,transition:"all .15s"}}>{noVip?"Без VIP ✓":"Без VIP"}</button></div>
+          <div style={{marginLeft:"auto"}}><button onClick={toggleAllVip} style={{background:!allVipOff?"#dc2626":"#12131a",border:`1px solid ${!allVipOff?"#dc2626":"#1e2028"}`,borderRadius:6,padding:"5px 10px",cursor:"pointer",fontFamily:F,color:!allVipOff?"#fff":"#6b7280",fontSize:11,fontWeight:600,transition:"all .15s"}}>{!allVipOff?"Без VIP ✓":"Без VIP"}</button></div>
         </div>
         <div style={{...cd,padding:10}}>
           <NgrBar current={totNGR} target={totTarget}/>
@@ -277,7 +281,7 @@ function App(){
             <div style={{display:"flex",alignItems:"center",gap:6,marginTop:6,padding:"5px 0 2px",borderTop:"1px solid #1a1d24"}}>
               <span style={{fontSize:10,color:"#6b7280",whiteSpace:"nowrap"}}>Цель:</span>
               <TargetChips value={t} onChange={v=>setGeoTarget(code,v)} size="big"/>
-              <button onClick={e=>{e.stopPropagation();setNoVip(v=>!v)}} style={{marginLeft:"auto",background:noVip?"#dc2626":"#12131a",border:`1px solid ${noVip?"#dc2626":"#1e2028"}`,borderRadius:5,padding:"2px 7px",cursor:"pointer",fontFamily:F,color:noVip?"#fff":"#4b5563",fontSize:9,fontWeight:600,transition:"all .15s",whiteSpace:"nowrap"}}>{noVip?"VIP ✕":"VIP"}</button>
+              <button onClick={e=>toggleGeoVip(code,e)} style={{marginLeft:"auto",background:isNoVip(code)?"#dc2626":"#12131a",border:`1px solid ${isNoVip(code)?"#dc2626":"#1e2028"}`,borderRadius:5,padding:"2px 7px",cursor:"pointer",fontFamily:F,color:isNoVip(code)?"#fff":"#4b5563",fontSize:9,fontWeight:600,transition:"all .15s",whiteSpace:"nowrap"}}>{isNoVip(code)?"VIP ✕":"VIP"}</button>
             </div>
           </div>);
         })}
@@ -286,8 +290,8 @@ function App(){
   }
 
   // ━━ GEO DETAIL ━━
-  const g=geos[view]; if(!g){goBack();return null;}
-  const target=getTarget(view),m=(noVip?MARCH_NOVIP:MARCH)[view];
+  const g=getGeoData(view); if(!g){goBack();return null;}
+  const target=getTarget(view),m=g;
   const pay=PAY_INFO[view]||{approve:.69,provider:"—",issue:"Нет данных"};
   const pp=getP(view);
   const arppu=pp.arppu??g.arppu;
@@ -309,14 +313,14 @@ function App(){
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
         <button onClick={goBack} style={{background:"#12131a",border:"1px solid #1e2028",borderRadius:7,padding:"5px 11px",color:"#6b7280",fontSize:13,cursor:"pointer"}}>←</button>
-        <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:noVip?"#dc2626":"#6b7280"}}>{pd.label} · {noVip?"Без VIP":pd.sub}</div></div>
+        <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:isNoVip(view)?"#dc2626":"#6b7280"}}>{pdLabel} · {isNoVip(view)?"Без VIP":"Факт"}</div></div>
       </div>
 
       {/* 1. TARGET */}
       <div style={{...cd,padding:10,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
         <span style={{fontSize:11,color:"#6b7280"}}>NGR цель:</span>
         {TARGETS.map(v=>(<button key={v} onClick={()=>setGeoTarget(view,v)} style={{background:target===v?"#e5a00d":"#12131a",border:`1px solid ${target===v?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:F,color:target===v?"#08090d":"#6b7280",fontSize:11,fontWeight:700}}>{$(v)}</button>))}
-        <div style={{marginLeft:"auto"}}><button onClick={()=>setNoVip(v=>!v)} style={{background:noVip?"#dc2626":"#12131a",border:`1px solid ${noVip?"#dc2626":"#1e2028"}`,borderRadius:6,padding:"4px 9px",cursor:"pointer",fontFamily:F,color:noVip?"#fff":"#6b7280",fontSize:10,fontWeight:600,transition:"all .15s"}}>{noVip?"Без VIP ✓":"Без VIP"}</button></div>
+        <div style={{marginLeft:"auto"}}><button onClick={()=>toggleGeoVip(view)} style={{background:isNoVip(view)?"#dc2626":"#12131a",border:`1px solid ${isNoVip(view)?"#dc2626":"#1e2028"}`,borderRadius:6,padding:"4px 9px",cursor:"pointer",fontFamily:F,color:isNoVip(view)?"#fff":"#6b7280",fontSize:10,fontWeight:600,transition:"all .15s"}}>{isNoVip(view)?"Без VIP ✓":"Без VIP"}</button></div>
       </div>
 
       {/* 2. ANSWER — what marketing needs to deliver */}
@@ -344,7 +348,7 @@ function App(){
       <div style={cd}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
           <span style={{fontSize:12,fontWeight:600,color:"#f3f4f6"}}>Текущие показатели</span>
-          <span style={{fontSize:9,color:"#4b5563"}}>{pd.label}</span>
+          <span style={{fontSize:9,color:"#4b5563"}}>{pdLabel}</span>
         </div>
         <NgrBar current={g.ngr} target={target}/>
         <div style={{display:"flex",flexWrap:"wrap",gap:"6px 12px",marginTop:8}}>
@@ -465,7 +469,7 @@ function App(){
         </div>
       </div>
 
-      <div style={{fontSize:8,color:"#2a2d35",padding:"3px 8px"}}>NGR = Dep − WD · ×{mult.toFixed(2)} · R2F {p1(r2f)} · {pd.label}</div>
+      <div style={{fontSize:8,color:"#2a2d35",padding:"3px 8px"}}>NGR = Dep − WD · ×{mult.toFixed(2)} · R2F {p1(r2f)} · {pdLabel}</div>
     </div>
   );
 }
