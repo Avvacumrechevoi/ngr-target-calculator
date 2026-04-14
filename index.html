@@ -44,6 +44,18 @@ const MARCH = {
   PT:{name:"Portugal",flag:"🇵🇹",au:48,ftd:37,dep:18648,wd:17671,ngr:977,arppu:21.2,cashout:.95,std:3,rtd:352,ltv:504,payback:7.0,sportP:400,casinoP:0,ggr:2831},
   CO:{name:"Colombia",flag:"🇨🇴",au:106,ftd:65,dep:6562,wd:5832,ngr:730,arppu:7.1,cashout:.89,std:5,rtd:999,ltv:101,payback:20.6,sportP:-2,casinoP:0,ggr:1251},
 };
+const MARCH_NOVIP = {
+  BR:{name:"Brazil",flag:"🇧🇷",au:1263,ftd:840,dep:277560,wd:228814,ngr:48746,arppu:38.6,cashout:0.82,std:330,rtd:6984,ltv:58,payback:9.8,sportP:22118,casinoP:36044,ggr:107776},
+  AR:{name:"Argentina",flag:"🇦🇷",au:2230,ftd:1758,dep:94762,wd:66505,ngr:28258,arppu:12.7,cashout:0.70,std:54,rtd:4111,ltv:16,payback:14.9,sportP:11107,casinoP:10873,ggr:36663},
+  CL:{name:"Chile",flag:"🇨🇱",au:547,ftd:462,dep:31261,wd:18053,ngr:13209,arppu:24.1,cashout:0.58,std:68,rtd:777,ltv:29,payback:3.4,sportP:675,casinoP:12055,ggr:24419},
+  MX:{name:"Mexico",flag:"🇲🇽",au:225,ftd:139,dep:17628,wd:11481,ngr:6147,arppu:27.3,cashout:0.65,std:127,rtd:264,ltv:44,payback:35.5,sportP:784,casinoP:2454,ggr:6361},
+  BD:{name:"Bangladesh",flag:"🇧🇩",au:375,ftd:245,dep:20708,wd:17893,ngr:2815,arppu:7.5,cashout:0.86,std:85,rtd:574,ltv:11,payback:2.7,sportP:2496,casinoP:0,ggr:9344},
+  IN:{name:"India",flag:"🇮🇳",au:101,ftd:26,dep:12272,wd:12749,ngr:-477,arppu:-4.7,cashout:1.04,std:472,rtd:243,ltv:-18,payback:26.1,sportP:2743,casinoP:0,ggr:4351},
+  PE:{name:"Peru",flag:"🇵🇪",au:153,ftd:88,dep:21833,wd:13247,ngr:8586,arppu:56.1,cashout:0.61,std:248,rtd:164,ltv:98,payback:68.0,sportP:-1930,casinoP:942,ggr:-2947},
+  PL:{name:"Poland",flag:"🇵🇱",au:60,ftd:16,dep:11999,wd:3754,ngr:8245,arppu:137.4,cashout:0.31,std:750,rtd:367,ltv:515,payback:37.1,sportP:287,casinoP:0,ggr:4026},
+  PT:{name:"Portugal",flag:"🇵🇹",au:47,ftd:37,dep:10678,wd:10104,ngr:574,arppu:12.2,cashout:0.95,std:289,rtd:202,ltv:16,payback:7.0,sportP:229,casinoP:0,ggr:1621},
+  CO:{name:"Colombia",flag:"🇨🇴",au:106,ftd:65,dep:6562,wd:5832,ngr:730,arppu:6.9,cashout:0.89,std:101,rtd:999,ltv:11,payback:20.6,sportP:-2,casinoP:0,ggr:1251},
+};
 const Q1AVG = {
   BR:{name:"Brazil",flag:"🇧🇷",au:1123,ftd:711,dep:406533,wd:322532,ngr:84001,arppu:75.8,cashout:.79},
   AR:{name:"Argentina",flag:"🇦🇷",au:1709,ftd:1295,dep:211825,wd:174392,ngr:37433,arppu:22.9,cashout:.82},
@@ -56,7 +68,6 @@ const Q1AVG = {
   PT:{name:"Portugal",flag:"🇵🇹",au:34,ftd:21,dep:20900,wd:15643,ngr:5258,arppu:211.5,cashout:.75},
   CO:{name:"Colombia",flag:"🇨🇴",au:88,ftd:48,dep:5735,wd:5006,ngr:729,arppu:8.1,cashout:.88},
 };
-const PERIODS={mar:{label:"Март 2026",sub:"Факт",data:MARCH},q1:{label:"Q1 2026",sub:"Среднее",data:Q1AVG}};
 const P_DEF={r2f:.143,m1:.148,m2m:.48};
 const PAY_INFO={
   BR:{approve:.86,provider:"Pagsmile PIX",issue:"Микродеп <$5 отклоняются"},
@@ -149,7 +160,12 @@ function App(){
   const[geoTargets,setGeoTargets]=useState({});
   const[showImp,setShowImp]=useState(false);
   const[modelP,setModelP]=useState({});
+  const[noVip,setNoVip]=useState(false);
   const scrollRef=useRef(0);
+
+  const PERIODS_ALL={mar:{label:"Март 2026",sub:"Факт",data:MARCH},q1:{label:"Q1 2026",sub:"Среднее",data:Q1AVG}};
+  const PERIODS_NV={mar:{label:"Март 2026",sub:"Без VIP",data:MARCH_NOVIP},q1:{label:"Q1 2026",sub:"Среднее",data:Q1AVG}};
+  const curPeriods=noVip?PERIODS_NV:PERIODS_ALL;
   const getTarget=c=>geoTargets[c]||globalTarget;
   const setGeoTarget=(c,v)=>setGeoTargets(p=>({...p,[c]:v}));
   const setAllTargets=v=>{setGlobalTarget(v);};
@@ -165,7 +181,7 @@ function App(){
   const setMP=(code,key,val)=>setModelP(p=>({...p,[code]:{...(p[code]||{}), [key]:val}}));
   const resetMP=code=>setModelP(p=>{const n={...p};delete n[code];return n;});
 
-  const pd=PERIODS[period],geos=pd.data;
+  const pd=curPeriods[period],geos=pd.data;
   const cd={background:"#0f1015",border:"1px solid #1a1d24",borderRadius:10,padding:14,marginBottom:10};
 
   function calc(code,g,t){
@@ -197,11 +213,12 @@ function App(){
           <div style={{fontSize:13,color:"#6b7280",marginTop:2}}>NGR Target Calculator</div>
         </div>
         <div style={{display:"flex",gap:0,marginBottom:8,borderRadius:8,overflow:"hidden",border:"1px solid #1e2028"}}>
-          {Object.entries(PERIODS).map(([k,v])=>(<button key={k} onClick={()=>setPeriod(k)} style={{flex:1,padding:"6px",background:period===k?"#e5a00d12":"#0f1015",border:"none",borderRight:k==="mar"?"1px solid #1e2028":"none",cursor:"pointer"}}><div style={{fontSize:12,fontWeight:600,color:period===k?"#e5a00d":"#6b7280"}}>{v.label}</div></button>))}
+          {Object.entries(curPeriods).map(([k,v])=>(<button key={k} onClick={()=>setPeriod(k)} style={{flex:1,padding:"6px",background:period===k?"#e5a00d12":"#0f1015",border:"none",borderRight:k==="mar"?"1px solid #1e2028":"none",cursor:"pointer"}}><div style={{fontSize:12,fontWeight:600,color:period===k?"#e5a00d":"#6b7280"}}>{v.label}</div></button>))}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,flexWrap:"wrap"}}>
           <span style={{fontSize:11,color:"#6b7280"}}>Цель для всех:</span>
           {TARGETS.map(v=>(<button key={v} onClick={()=>setAllTargets(v)} style={{background:globalTarget===v?"#e5a00d":"#12131a",border:`1px solid ${globalTarget===v?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"5px 11px",cursor:"pointer",fontFamily:F,color:globalTarget===v?"#08090d":"#6b7280",fontSize:12,fontWeight:700}}>{$(v)}</button>))}
+          <div style={{marginLeft:"auto"}}><button onClick={()=>setNoVip(v=>!v)} style={{background:noVip?"#dc2626":"#12131a",border:`1px solid ${noVip?"#dc2626":"#1e2028"}`,borderRadius:6,padding:"5px 10px",cursor:"pointer",fontFamily:F,color:noVip?"#fff":"#6b7280",fontSize:11,fontWeight:600,transition:"all .15s"}}>{noVip?"Без VIP ✓":"Без VIP"}</button></div>
         </div>
         <div style={{...cd,padding:10}}>
           <NgrBar current={totNGR} target={totTarget}/>
@@ -262,7 +279,7 @@ function App(){
 
   // ━━ GEO DETAIL ━━
   const g=geos[view]; if(!g){goBack();return null;}
-  const target=getTarget(view),m=MARCH[view];
+  const target=getTarget(view),m=(noVip?MARCH_NOVIP:MARCH)[view];
   const pay=PAY_INFO[view]||{approve:.69,provider:"—",issue:"Нет данных"};
   const pp=getP(view);
   const arppu=pp.arppu??g.arppu;
