@@ -161,6 +161,10 @@ function App(){
   const[showImp,setShowImp]=useState(false);
   const[modelP,setModelP]=useState({});
   const[noVip,setNoVip]=useState(false);
+  const[geoNoVip,setGeoNoVip]=useState({});
+  const toggleGeoVip=(code,e)=>{e.stopPropagation();setGeoNoVip(p=>({...p,[code]:!p[code]}));};
+  const toggleAllVip=()=>{const nv=!noVip;setNoVip(nv);const all={};GEO_ORDER.forEach(c=>{all[c]=nv;});setGeoNoVip(all);};
+  const isNoVip=(code)=>geoNoVip[code]||false;
   const scrollRef=useRef(0);
 
   const PERIODS_ALL={mar:{label:"Март 2026",sub:"Факт",data:MARCH},q1:{label:"Q1 2026",sub:"Среднее",data:Q1AVG}};
@@ -197,7 +201,10 @@ function App(){
   // ━━ OVERVIEW ━━
   if(view==="all"){
     const rows=GEO_ORDER.filter(code=>geos[code]).map(code=>{
-      const g=geos[code],t=getTarget(code);
+      const gAll=MARCH[code], gNv=MARCH_NOVIP[code];
+      const useNv=isNoVip(code)&&period==="mar"&&gNv;
+      const g=useNv?gNv:geos[code];
+      const t=getTarget(code);
       const c=calc(code,g,t);
       const multI=1+.20/(1-.55),r2fI=P_DEF.r2f*(.82/.689);
       const rImp=c.arppu<=0?99999:Math.ceil(t/c.arppu/multI/r2fI);
@@ -270,6 +277,7 @@ function App(){
             <div style={{display:"flex",alignItems:"center",gap:6,marginTop:6,padding:"5px 0 2px",borderTop:"1px solid #1a1d24"}}>
               <span style={{fontSize:10,color:"#6b7280",whiteSpace:"nowrap"}}>Цель:</span>
               <TargetChips value={t} onChange={v=>setGeoTarget(code,v)} size="big"/>
+              <button onClick={e=>{e.stopPropagation();setNoVip(v=>!v)}} style={{marginLeft:"auto",background:noVip?"#dc2626":"#12131a",border:`1px solid ${noVip?"#dc2626":"#1e2028"}`,borderRadius:5,padding:"2px 7px",cursor:"pointer",fontFamily:F,color:noVip?"#fff":"#4b5563",fontSize:9,fontWeight:600,transition:"all .15s",whiteSpace:"nowrap"}}>{noVip?"VIP ✕":"VIP"}</button>
             </div>
           </div>);
         })}
