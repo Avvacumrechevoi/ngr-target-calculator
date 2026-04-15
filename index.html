@@ -44,17 +44,17 @@ const MARCH = {
   PT:{name:"Portugal",flag:"🇵🇹",au:48,ftd:37,dep:18648,wd:17671,ngr:977,arppu:21.2,cashout:.95,std:3,rtd:352,ltv:504,payback:7.0,sportP:400,casinoP:0,ggr:2831},
   CO:{name:"Colombia",flag:"🇨🇴",au:106,ftd:65,dep:6562,wd:5832,ngr:730,arppu:7.1,cashout:.89,std:5,rtd:999,ltv:101,payback:20.6,sportP:-2,casinoP:0,ggr:1251},
 };
-const MARCH_NOVIP = {
-  BR:{name:"Brazil",flag:"🇧🇷",au:1263,ftd:840,dep:277560,wd:228814,ngr:48746,arppu:38.6,cashout:0.82,std:330,rtd:6984,ltv:58,payback:9.8,sportP:22118,casinoP:36044,ggr:107776},
-  AR:{name:"Argentina",flag:"🇦🇷",au:2230,ftd:1758,dep:94762,wd:66505,ngr:28258,arppu:12.7,cashout:0.70,std:54,rtd:4111,ltv:16,payback:14.9,sportP:11107,casinoP:10873,ggr:36663},
-  CL:{name:"Chile",flag:"🇨🇱",au:547,ftd:462,dep:31261,wd:18053,ngr:13209,arppu:24.1,cashout:0.58,std:68,rtd:777,ltv:29,payback:3.4,sportP:675,casinoP:12055,ggr:24419},
-  MX:{name:"Mexico",flag:"🇲🇽",au:225,ftd:139,dep:17628,wd:11481,ngr:6147,arppu:27.3,cashout:0.65,std:127,rtd:264,ltv:44,payback:35.5,sportP:784,casinoP:2454,ggr:6361},
-  BD:{name:"Bangladesh",flag:"🇧🇩",au:375,ftd:245,dep:20708,wd:17893,ngr:2815,arppu:7.5,cashout:0.86,std:85,rtd:574,ltv:11,payback:2.7,sportP:2496,casinoP:0,ggr:9344},
-  IN:{name:"India",flag:"🇮🇳",au:101,ftd:26,dep:12272,wd:12749,ngr:-477,arppu:-4.7,cashout:1.04,std:472,rtd:243,ltv:-18,payback:26.1,sportP:2743,casinoP:0,ggr:4351},
-  PE:{name:"Peru",flag:"🇵🇪",au:153,ftd:88,dep:21833,wd:13247,ngr:8586,arppu:56.1,cashout:0.61,std:248,rtd:164,ltv:98,payback:68.0,sportP:-1930,casinoP:942,ggr:-2947},
-  PL:{name:"Poland",flag:"🇵🇱",au:60,ftd:16,dep:11999,wd:3754,ngr:8245,arppu:137.4,cashout:0.31,std:750,rtd:367,ltv:515,payback:37.1,sportP:287,casinoP:0,ggr:4026},
-  PT:{name:"Portugal",flag:"🇵🇹",au:47,ftd:37,dep:10678,wd:10104,ngr:574,arppu:12.2,cashout:0.95,std:289,rtd:202,ltv:16,payback:7.0,sportP:229,casinoP:0,ggr:1621},
-  CO:{name:"Colombia",flag:"🇨🇴",au:106,ftd:65,dep:6562,wd:5832,ngr:730,arppu:6.9,cashout:0.89,std:101,rtd:999,ltv:11,payback:20.6,sportP:-2,casinoP:0,ggr:1251},
+const VIP_SEG = {
+  BR:{vip:{d:145244,w:116344,n:28900,u:50},vipp:{d:1746,w:1372,n:374,u:4},vippp:{d:12499,w:4949,n:7550,u:4}},
+  AR:{vip:{d:47323,w:31277,n:16045,u:11},vipp:{d:28796,w:44509,n:-15714,u:2},vippp:{d:51576,w:37723,n:13853,u:1}},
+  CL:{vip:{d:5696,w:4574,n:1121,u:4},vipp:{d:2158,w:0,n:2158,u:2},vippp:{d:5065,w:545,n:4520,u:2}},
+  MX:{vip:{d:15367,w:12867,n:2501,u:5},vipp:{d:7340,w:2141,n:5198,u:2},vippp:{d:23103,w:25915,n:-2812,u:1}},
+  BD:{vip:{d:5073,w:2892,n:2180,u:1},vipp:{d:0,w:0,n:0,u:0},vippp:{d:0,w:0,n:0,u:0}},
+  IN:{vip:{d:20895,w:17420,n:3475,u:6},vipp:{d:3873,w:456,n:3417,u:1},vippp:{d:0,w:0,n:0,u:0}},
+  PE:{vip:{d:36666,w:30491,n:6174,u:7},vipp:{d:0,w:0,n:0,u:0},vippp:{d:97864,w:95430,n:2434,u:2}},
+  PL:{vip:{d:9472,w:11613,n:-2141,u:8},vipp:{d:931,w:727,n:204,u:1},vippp:{d:27435,w:19186,n:8250,u:2}},
+  PT:{vip:{d:7970,w:7567,n:403,u:1},vipp:{d:0,w:0,n:0,u:0},vippp:{d:0,w:0,n:0,u:0}},
+  CO:{vip:{d:0,w:0,n:0,u:0},vipp:{d:0,w:0,n:0,u:0},vippp:{d:0,w:0,n:0,u:0}},
 };
 const Q1AVG = {
   BR:{name:"Brazil",flag:"🇧🇷",au:1123,ftd:711,dep:406533,wd:322532,ngr:84001,arppu:75.8,cashout:.79},
@@ -160,17 +160,30 @@ function App(){
   const[geoTargets,setGeoTargets]=useState({});
   const[showImp,setShowImp]=useState(false);
   const[modelP,setModelP]=useState({});
-  const[geoNoVip,setGeoNoVip]=useState({});
+  const[geoVipEx,setGeoVipEx]=useState({});
   const scrollRef=useRef(0);
 
-  const toggleGeoVip=(code,e)=>{if(e)e.stopPropagation();setGeoNoVip(p=>({...p,[code]:!p[code]}));};
-  const allVipOff=Object.values(geoNoVip).every(v=>!v)||Object.keys(geoNoVip).length===0;
-  const toggleAllVip=()=>{const nv=allVipOff;const all={};GEO_ORDER.forEach(c=>{all[c]=nv;});setGeoNoVip(all);};
-  const isNoVip=(code)=>!!geoNoVip[code];
+  const getEx=(code)=>geoVipEx[code]||{vip:false,vipp:false,vippp:false};
+  const hasAnyEx=(code)=>{const e=getEx(code);return e.vip||e.vipp||e.vippp;};
+  const toggleSeg=(code,seg,e)=>{if(e)e.stopPropagation();setGeoVipEx(p=>{const cur=p[code]||{vip:false,vipp:false,vippp:false};return{...p,[code]:{...cur,[seg]:!cur[seg]}};});};
+  const toggleAllVip=()=>{const anyOn=GEO_ORDER.some(c=>hasAnyEx(c));const nv={};GEO_ORDER.forEach(c=>{nv[c]=anyOn?{vip:false,vipp:false,vippp:false}:{vip:true,vipp:true,vippp:true};});setGeoVipEx(nv);};
+  const allVipOff=!GEO_ORDER.some(c=>hasAnyEx(c));
+
   const getGeoData=(code)=>{
     const base=period==="mar"?MARCH:Q1AVG;
-    const nv=period==="mar"?MARCH_NOVIP:null;
-    return (isNoVip(code)&&nv&&nv[code])?nv[code]:base[code];
+    const b=base[code]; if(!b)return null;
+    const ex=getEx(code);
+    if(period!=="mar"||(!ex.vip&&!ex.vipp&&!ex.vippp))return b;
+    const vs=VIP_SEG[code]||{vip:{d:0,w:0,n:0,u:0},vipp:{d:0,w:0,n:0,u:0},vippp:{d:0,w:0,n:0,u:0}};
+    let subD=0,subW=0,subN=0,subU=0;
+    if(ex.vip){subD+=vs.vip.d;subW+=vs.vip.w;subN+=vs.vip.n;subU+=vs.vip.u;}
+    if(ex.vipp){subD+=vs.vipp.d;subW+=vs.vipp.w;subN+=vs.vipp.n;subU+=vs.vipp.u;}
+    if(ex.vippp){subD+=vs.vippp.d;subW+=vs.vippp.w;subN+=vs.vippp.n;subU+=vs.vippp.u;}
+    const dep=b.dep-subD,wd=b.wd-subW,ngr=b.ngr-subN;
+    const au=Math.max(1,b.au-subU);
+    const arppu=au>0?Math.round(ngr/au*10)/10:0;
+    const cashout=dep>0?Math.round(wd/dep*100)/100:0;
+    return{...b,dep,wd,ngr,au,arppu,cashout};
   };
   const pdLabel=period==="mar"?"Март 2026":"Q1 2026";
 
@@ -205,9 +218,7 @@ function App(){
   // ━━ OVERVIEW ━━
   if(view==="all"){
     const rows=GEO_ORDER.filter(code=>baseGeos[code]).map(code=>{
-      const gNv=MARCH_NOVIP[code];
-      const useNv=isNoVip(code)&&period==="mar"&&gNv;
-      const g=useNv?gNv:baseGeos[code];
+      const g=getGeoData(code);
       const t=getTarget(code);
       const c=calc(code,g,t);
       const multI=1+.20/(1-.55),r2fI=P_DEF.r2f*(.82/.689);
@@ -281,7 +292,7 @@ function App(){
             <div style={{display:"flex",alignItems:"center",gap:6,marginTop:6,padding:"5px 0 2px",borderTop:"1px solid #1a1d24"}}>
               <span style={{fontSize:10,color:"#6b7280",whiteSpace:"nowrap"}}>Цель:</span>
               <TargetChips value={t} onChange={v=>setGeoTarget(code,v)} size="big"/>
-              <button onClick={e=>toggleGeoVip(code,e)} style={{marginLeft:"auto",background:isNoVip(code)?"#dc2626":"#12131a",border:`1px solid ${isNoVip(code)?"#dc2626":"#1e2028"}`,borderRadius:5,padding:"2px 7px",cursor:"pointer",fontFamily:F,color:isNoVip(code)?"#fff":"#4b5563",fontSize:9,fontWeight:600,transition:"all .15s",whiteSpace:"nowrap"}}>{isNoVip(code)?"VIP ✕":"VIP"}</button>
+              <div style={{marginLeft:"auto",display:"flex",gap:2}}>{[["vippp","++"],["vipp","+"],["vip","В"]].map(([seg,lb])=>{const on=getEx(code)[seg];return(<button key={seg} onClick={e=>toggleSeg(code,seg,e)} style={{background:on?"#dc2626":"#12131a",border:`1px solid ${on?"#dc2626":"#1e2028"}`,borderRadius:4,padding:"2px 5px",cursor:"pointer",fontFamily:F,color:on?"#fff":"#4b5563",fontSize:9,fontWeight:600,transition:"all .1s",minWidth:22}}>{lb}</button>);})}</div>
             </div>
           </div>);
         })}
@@ -313,14 +324,14 @@ function App(){
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
         <button onClick={goBack} style={{background:"#12131a",border:"1px solid #1e2028",borderRadius:7,padding:"5px 11px",color:"#6b7280",fontSize:13,cursor:"pointer"}}>←</button>
-        <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:isNoVip(view)?"#dc2626":"#6b7280"}}>{pdLabel} · {isNoVip(view)?"Без VIP":"Факт"}</div></div>
+        <div style={{flex:1}}><div style={{fontSize:17,fontWeight:700,color:"#f3f4f6"}}>{g.flag} {g.name}</div><div style={{fontSize:10,color:hasAnyEx(view)?"#dc2626":"#6b7280"}}>{pdLabel} · {hasAnyEx(view)?"Без "+[getEx(view).vippp&&"++",getEx(view).vipp&&"+",getEx(view).vip&&"В"].filter(Boolean).join("/"):"Факт"}</div></div>
       </div>
 
       {/* 1. TARGET */}
       <div style={{...cd,padding:10,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
         <span style={{fontSize:11,color:"#6b7280"}}>NGR цель:</span>
         {TARGETS.map(v=>(<button key={v} onClick={()=>setGeoTarget(view,v)} style={{background:target===v?"#e5a00d":"#12131a",border:`1px solid ${target===v?"#e5a00d":"#1e2028"}`,borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:F,color:target===v?"#08090d":"#6b7280",fontSize:11,fontWeight:700}}>{$(v)}</button>))}
-        <div style={{marginLeft:"auto"}}><button onClick={()=>toggleGeoVip(view)} style={{background:isNoVip(view)?"#dc2626":"#12131a",border:`1px solid ${isNoVip(view)?"#dc2626":"#1e2028"}`,borderRadius:6,padding:"4px 9px",cursor:"pointer",fontFamily:F,color:isNoVip(view)?"#fff":"#6b7280",fontSize:10,fontWeight:600,transition:"all .15s"}}>{isNoVip(view)?"Без VIP ✓":"Без VIP"}</button></div>
+        <div style={{marginLeft:"auto",display:"flex",gap:3}}>{[["vippp","VIP++"],["vipp","VIP+"],["vip","VIP"]].map(([seg,lb])=>{const on=getEx(view)[seg];return(<button key={seg} onClick={()=>toggleSeg(view,seg)} style={{background:on?"#dc2626":"#12131a",border:`1px solid ${on?"#dc2626":"#1e2028"}`,borderRadius:5,padding:"4px 8px",cursor:"pointer",fontFamily:F,color:on?"#fff":"#6b7280",fontSize:10,fontWeight:600,transition:"all .1s"}}>{on?"−":""}{lb}</button>);})}</div>
       </div>
 
       {/* 2. ANSWER — what marketing needs to deliver */}
